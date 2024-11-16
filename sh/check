@@ -1,0 +1,83 @@
+#!/bin/bash
+
+CHECKSTATUS=0
+QUIETEXIT=0
+
+if which datab >/dev/null; then
+   CHECKSTATUS=$(($CHECKSTATUS | 1))
+fi
+if ldconfig -p | grep -q '\<libssh2.so\.[0-9]\+>'; then
+   CHECKSTATUS=$(($CHECKSTATUS | 2))
+fi
+if [ -f /usr/include/argon2.h ] && [ -f /usr/lib/libargon2.so ]; then
+   CHECKSTATUS=$(($CHECKSTATUS | 4))
+fi
+
+usage()
+{
+   echo "usage: $0 [-h | -t | -s | -q]"
+   echo "   -h print this message"
+   echo "   -t print necessary make targets"
+   echo "   -s print dependency status"
+   echo "   -q always exit with 0"
+   echo ""
+   echo "exit status is an octal status value"
+}
+
+print_status()
+{
+   if (($CHECKSTATUS & 1)); then
+      echo -e "       datab      \e[32mPRESENT\e[0m"
+   else
+      echo -e "       datab      \e[31mMISSING\e[0m"
+   fi
+   if (($CHECKSTATUS & 2)); then
+      echo -e "     libssh2.so   \e[32mPRESENT\e[0m"
+   else
+      echo -e "     libssh2.so   \e[31mMISSING\e[0m"
+   fi
+   if (($CHECKSTATUS & 4)); then
+      echo -e "      argon2      \e[32mPRESENT\e[0m"
+   else
+      echo -e "      argon2      \e[31mMISSING\e[0m"
+   fi
+}
+
+print_targets()
+{
+   if ! (($CHECKSTATUS & 2)); then
+      echo -n "install-libssh2 "
+   fi
+   if ! (($CHECKSTATUS & 4)); then
+      echo -n "install-argon2 "
+   fi
+   if [ "$CHECKSTATUS" -gt 0 ]; then
+      echo -n "install-datab "
+   fi
+}
+
+while getopts "htsq" flag; do
+   case $flag in
+      h)
+         usage
+         ;;
+      t)
+         print_targets
+         ;;
+      s)
+         print_status
+         ;;
+      q)
+         QUIETEXIT=1
+         ;;
+      \?)
+         usage
+         ;;
+   esac
+done
+
+if ! [ QUIETEXIT ]; then
+   exit $CHECKSTATUS
+else
+   exit 0
+fi

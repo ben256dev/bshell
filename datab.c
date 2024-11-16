@@ -12,7 +12,6 @@
 
 #include <libssh2.h>
 
-
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -23,10 +22,10 @@
 #include <string.h>
 
 static const char *hostname = "144.202.88.33";
-static const char *commandline = "uptime";
+static const char *commandline = "";
 static const char *pubkey = "/home/ben256/.ssh/id_rsa.pub";
 static const char *privkey = "/home/ben256/.ssh/id_rsa";
-static const char *username = "ben";
+static const char *username = "datab";
 static const char *password = "";
 
 static int waitsocket(libssh2_socket_t socket_fd, LIBSSH2_SESSION *session)
@@ -81,16 +80,6 @@ int main(int argc, char *argv[])
     size_t len;
     LIBSSH2_KNOWNHOSTS *nh;
     int type;
-
-#ifdef _WIN32
-    WSADATA wsadata;
-
-    rc = WSAStartup(MAKEWORD(2, 0), &wsadata);
-    if(rc) {
-        fprintf(stderr, "WSAStartup failed with error: %d\n", rc);
-        return 1;
-    }
-#endif
 
     if(argc > 1) {
         commandline = argv[1];
@@ -301,10 +290,6 @@ shutdown:
     fprintf(stderr, "all done\n");
 
     libssh2_exit();
-
-#ifdef _WIN32
-    WSACleanup();
-#endif
 
     return 0;
 }
