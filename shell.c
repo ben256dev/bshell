@@ -1,11 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
-void die()
-{
-   exit(EXIT_FAILURE);
-}
+#include <butil.h>
 
 int main(int argc, char* argv[])
 {
@@ -15,24 +14,28 @@ int main(int argc, char* argv[])
    for (int i = 0; i < argc; i++)
    {
       char c;
-      for (int j = 0; (c = argv[j]) != '\0'; j++)
+      for (int j = 0; (c = argv[i][j]) != '\0'; j++)
       {
          if (!isalnum(c))
-            die();
+            die("'%c' is non-alphanumeric", c);
       }
    }
 
    if (argc == 2)
    {
-      if (strcmp(argv[0], "unlock-shell") == 0)
+      if (strcmp(argv[0], "break") == 0)
       {
-         setenv("BPASSPHRASERAW", argv[1], 1);
-         system("unlock-shell-check-passphrase");
-         perror("execvp failed");
+         if (setenv("BPASSRAW", argv[1], 1))
+            pdie("setenv(\"BPASSRAW\", argv[1], 1)");
+
+         if (system("datab-shell-checkpass"))
+            pdie("system(\"datab-shell-checkpass\")");
+
+         return 0;
       }
    }
-   else
-      printf("sup\n");
+
+   printf("sup\n");
 
 	return 0;
 }

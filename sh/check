@@ -3,8 +3,9 @@
 CHECKSTATUS=0
 QUIETEXIT=0
 INSTALL_ATTEMPT=0
+UNINSTALL_ATTEMPT=0
 
-if ! which datab >/dev/null; then
+if ! [ -f /usr/include/butil/butil.h ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 1))
 fi
 if ! [ -f /usr/include/libssh2.h ] && ! [ -f /usr/lib/libssh2.so ]; then
@@ -30,9 +31,9 @@ usage()
 print_status()
 {
    if (($CHECKSTATUS & 1)); then
-      echo -e "     datab   \e[31mMISSING\e[0m"
+      echo -e "     butil   \e[31mMISSING\e[0m"
    else
-      echo -e "     datab   \e[32mPRESENT\e[0m"
+      echo -e "     butil   \e[32mPRESENT\e[0m"
    fi
    if (($CHECKSTATUS & 2)); then
       echo -e "   libssh2   \e[31mMISSING\e[0m"
@@ -55,7 +56,7 @@ print_install_status()
    echo -e "\e[2;7;31mFAILED TO INSTALL THE FOLLOWING:\e[0m"
 
    if (($INSTALL_ATTEMPT & $CHECKSTATUS & 1)); then
-      echo -e "   \e[31m- datab\e[0m"
+      echo -e "   \e[31m- butil\e[0m"
    fi
 
    if (($INSTALL_ATTEMPT & $CHECKSTATUS & 2)); then
@@ -67,20 +68,41 @@ print_install_status()
    fi
 }
 
+print_uninstall_status()
+{
+   if ! (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS)); then
+      return;
+   fi
+
+   echo -e "\e[7;33mFAILED TO UNINSTALL THE FOLLOWING:\e[0m"
+
+   if (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS & 1)); then
+      echo -e "   \e[33m- butil\e[0m"
+   fi
+
+   if (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS & 2)); then
+      echo -e "   \e[33m- libssh2\e[0m"
+   fi
+
+   if (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS & 4)); then
+      echo -e "   \e[33m- argon2\e[0m"
+   fi
+}
+
 print_targets()
 {
+   if (($CHECKSTATUS & 1)); then
+      echo -n "install-butil "
+   fi
    if (($CHECKSTATUS & 2)); then
       echo -n "install-libssh2 "
    fi
    if (($CHECKSTATUS & 4)); then
       echo -n "install-argon2 "
    fi
-   if [ "$CHECKSTATUS" -gt 0 ]; then
-      echo -n "install-datab "
-   fi
 }
 
-while getopts "htsi:q" flag; do
+while getopts "htsi:u:q" flag; do
    case $flag in
       h)
          usage
@@ -94,6 +116,10 @@ while getopts "htsi:q" flag; do
       i)
          INSTALL_ATTEMPT=$OPTARG
          print_install_status
+         ;;
+      u)
+         UNINSTALL_ATTEMPT=$OPTARG
+         print_uninstall_status
          ;;
       q)
          QUIETEXIT=1
