@@ -1,6 +1,10 @@
 tags
 datab
 dumpfile
+butil/
 argon2/
 pch-winner-argon2/
+
 datab-shell
+shell
+checkpass

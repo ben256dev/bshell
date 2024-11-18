@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include <butil.h>
+#include <butil/butil.h>
 
 int main(int argc, char* argv[])
 {
@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
          if (setenv("BPASSRAW", argv[1], 1))
             pdie("setenv(\"BPASSRAW\", argv[1], 1)");
 
-         if (system("datab-shell-checkpass"))
-            pdie("system(\"datab-shell-checkpass\")");
+         if (system("checkpass"))
+            pdie("system(\"checkpass\")");
 
          return 0;
       }
