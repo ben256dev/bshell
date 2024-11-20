@@ -86,7 +86,13 @@ uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil clean
 
 .PHONY: client
 client:
-	@gcc butil.c -o butil -lssh2 -L/bin/src -I/usr/local/include
+	@gcc checkpass.c -o checkpass 
+	@gcc shell.c -o shell -I/usr/local/include -largon2
+
+.PHONY: client-debug
+client-debug:
+	@gcc checkpass.c -g -o checkpass 
+	@gcc shell.c -g -o shell -I/usr/local/include -largon2
 
 .PHONY: clean
 clean:
