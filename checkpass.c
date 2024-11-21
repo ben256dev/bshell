@@ -5,9 +5,8 @@
 #include <unistd.h>
 
 #include <butil/butil.h>
-#include <argon2.h>
 
-void write_password(const char* password_path, const char* passval, size_t passlen)
+void write_password(const char* password_path, const char* passval, size_t passlen, const char* passsal)
 {
    FILE* password_file;
 
@@ -16,7 +15,8 @@ void write_password(const char* password_path, const char* passval, size_t passl
       pdie("fopen()");
 
    fwrite(passval, 1, passlen, password_file);
-   fprintf(password_file, "\n");
+   fputc('\n', password_file);
+   fprintf(password_file, "%s\n", passsal);
    fclose(password_file);
 }
 void authenticate(const char* password_path, const char* passval, size_t passlen)
@@ -42,6 +42,10 @@ int main(int argc, char* argv[])
    if (passkey == NULL)
       die("BPASSKEY == NULL");
 
+   const char* passsal = getenv("BPASSSAL");
+   if (passsal == NULL)
+      die("BPASSSAL == NULL");
+
    const char* passdel = getenv("BPASSDEL");
    if (passdel == NULL)
       die("BPASSDEL == NULL");
@@ -63,14 +67,19 @@ int main(int argc, char* argv[])
       die();
 
    struct stat statbuff;
-   if (stat(password_path, &statbuff))
+   int rv = stat(password_path, &statbuff);
+
+   if (rv == 0 && !S_ISREG(statbuff.st_mode))
+      die("\033[1;5;31mirregular:%o\033[0m", statbuff.st_mode);
+
+   if (rv)
    {
       if (passdel[0] == '1')
       {
          puts("\033[1;2;31munknown\033[0m");
          return 0;
       }
-      write_password(password_path, passval, passlen);
+      write_password(password_path, passval, passlen, passsal);
       puts("\033[1;36mcreated\033[0m");
       return 0;
    }
