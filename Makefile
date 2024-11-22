@@ -22,7 +22,7 @@ install-argon2:
 	@sudo cp phc-winner-argon2/libargon2.so /usr/lib/
 	@sudo cp phc-winner-argon2/include/argon2.h /usr/include/
 	@rm -rf phc-winner-argon2
-	@./sh/check -i4
+	@./sh/check -i04
 
 .PHONY: install-libssh2
 install-libssh2:
@@ -33,7 +33,7 @@ install-libssh2:
 	@sudo cp libssh2/bld/src/libssh2.so /usr/lib/
 	@sudo cp libssh2/include/libssh2.h /usr/include/
 	@rm -rf libssh2
-	@./sh/check -i2
+	@./sh/check -i02
 
 .PHONY: install-butil
 install-butil:
@@ -45,17 +45,18 @@ install-butil:
 		make install; \
 		rm -rf $$(ls -1 | grep -v '\<Makefile\>'); \
 	fi
-	@./sh/check -i1
+	@./sh/check -i01
 
-.PHONY: install-aes
-install-aes:
+.PHONY: install-tiny-aes
+install-tiny-aes:
 	@if ! [ -d tiny-AES-c ]; then \
 		git clone git@github.com:kokke/tiny-AES-c.git; \
 	fi
 	@cd tiny-AES-c && gcc -fPIC -c aes.c -o aes.o && gcc -shared -o libtinyaes.so aes.o
 	@sudo cp tiny-AES-c/aes.h /usr/include/
 	@sudo cp tiny-AES-c/libtinyaes.so /usr/lib/
-	@./sh/check -i8
+	@rm -rf tiny-AES-c
+	@./sh/check -i010
 
 .PHONY: uninstall-argon2
 uninstall-argon2:
@@ -65,7 +66,7 @@ uninstall-argon2:
 	@if [ -f /usr/include/argon2.h ]; then \
 		sudo rm /usr/include/argon2.h; \
 	fi
-	@./sh/check -u4
+	@./sh/check -u04
 
 .PHONY: uninstall-libssh2
 uninstall-libssh2:
@@ -75,7 +76,7 @@ uninstall-libssh2:
 	@if [ -f /usr/include/libssh2.h ]; then \
 		sudo rm /usr/include/libssh2.h; \
 	fi
-	@./sh/check -u2
+	@./sh/check -u02
 
 .PHONY: uninstall-butil
 uninstall-butil:
@@ -85,39 +86,47 @@ uninstall-butil:
 		cd ../; \
 		rm -rf butil; \
 	fi
-	@./sh/check -u1
+	@./sh/check -u01
 
-.PHONY: uninstall-aes
-uninstall-aes:
-	@cd tiny-AES-c && gcc -fPIC -c aes.c -o aes.o && gcc -shared -o libtinyaes.so aes.o
+.PHONY: uninstall-tiny-aes
+uninstall-tiny-aes:
+	@if [ -d tiny-AES-c ]; then \
+		cd tiny-AES-c; \
+		gcc -fPIC -c aes.c -o aes.o; \
+		gcc -shared -o libtinyaes.so aes.o; \
+	fi
 	@if [ -f /usr/include/aes.h ]; then \
 		sudo rm /usr/include/aes.h; \
 	fi
 	@if [ -f /usr/lib/libtinyaes.so ]; then \
 		sudo rm /usr/lib/libtinyaes.so; \
 	fi
-	@./sh/check -u8
+	@if [ -d tiny-AES-c ]; then \
+		rm -rf tiny-AES-c; \
+	fi
+	@./sh/check -u010
 
 .PHONY: check
 check:
 	@./sh/check -s -q
 
 .PHONY: uninstall
-uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil clean
+uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil uninstall-tiny-aes clean
 	@./sh/check -u15
 
 .PHONY: client
 client:
 	@gcc checkpass.c -o checkpass 
-	@gcc shell.c -o shell -I/usr/local/include -largon2 -lcrypto
+	@gcc shell.c -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: client-debug
 client-debug:
 	@gcc checkpass.c -g -o checkpass 
-	@gcc shell.c -g -o shell -I/usr/local/include -largon2 -lcrypto
+	@gcc shell.c -g -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: clean
 clean:
 	@if [ -d butil ]; then rm -rf butil; fi
 	@if [ -d phc-winner-argon2 ]; then rm -rf phc-winner-argon2; fi
 	@if [ -d libssh2 ]; then rm -rf libssh2; fi
+	@if [ -d tiny-AES-c ]; then rm -rf tiny-AES-c; fi

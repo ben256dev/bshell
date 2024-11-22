@@ -125,7 +125,7 @@ print_targets()
       echo -n "install-argon2 "
    fi
    if (($CHECKSTATUS & 8)); then
-      echo -n "tiny-aes"
+      echo -n "install-tiny-aes"
    fi
 }
 
