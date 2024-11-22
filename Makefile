@@ -47,6 +47,16 @@ install-butil:
 	fi
 	@./sh/check -i1
 
+.PHONY: install-aes
+install-aes:
+	@if ! [ -d tiny-AES-c ]; then \
+		git clone git@github.com:kokke/tiny-AES-c.git; \
+	fi
+	@cd tiny-AES-c && gcc -fPIC -c aes.c -o aes.o && gcc -shared -o libtinyaes.so aes.o
+	@sudo cp tiny-AES-c/aes.h /usr/include/
+	@sudo cp tiny-AES-c/libtinyaes.so /usr/lib/
+	@./sh/check -i8
+
 .PHONY: uninstall-argon2
 uninstall-argon2:
 	@if [ -f /usr/lib/libargon2.so ]; then \
@@ -75,6 +85,18 @@ uninstall-butil:
 		cd ../; \
 		rm -rf butil; \
 	fi
+	@./sh/check -u1
+
+.PHONY: uninstall-aes
+uninstall-aes:
+	@cd tiny-AES-c && gcc -fPIC -c aes.c -o aes.o && gcc -shared -o libtinyaes.so aes.o
+	@if [ -f /usr/include/aes.h ]; then \
+		sudo rm /usr/include/aes.h; \
+	fi
+	@if [ -f /usr/lib/libtinyaes.so ]; then \
+		sudo rm /usr/lib/libtinyaes.so; \
+	fi
+	@./sh/check -u8
 
 .PHONY: check
 check:
@@ -82,7 +104,7 @@ check:
 
 .PHONY: uninstall
 uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil clean
-	@./sh/check -u7
+	@./sh/check -u15
 
 .PHONY: client
 client:

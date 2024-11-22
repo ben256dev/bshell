@@ -14,6 +14,9 @@ fi
 if ! [ -f /usr/include/argon2.h ] && ! [ -f /usr/lib/libargon2.so ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 4))
 fi
+if ! [ -f /usr/include/aes.h ] && ! [ -f /usr/lib/libtinyaes.so ]; then
+   CHECKSTATUS=$(($CHECKSTATUS | 8))
+fi
 
 usage()
 {
@@ -23,7 +26,15 @@ usage()
    echo "   -s print dependency status"
    echo "   -i prints installation success/failure message"
    echo "      where INSTALL_ATTEMPT is an octal number"
+   echo "   -u prints uninstall success/failure message"
+   echo "      where UNINSTALL_ATTEMPT is an octal number"
    echo "   -q always exit with 0"
+   echo ""
+   echo "library octal values:"
+   echo "   butil:    001"
+   echo "   libssh2:  002"
+   echo "   argon2:   004"
+   echo "   tiny-aes: 010"
    echo ""
    echo "exit status is an octal status value"
 }
@@ -44,6 +55,11 @@ print_status()
       echo -e "    argon2   \e[31mMISSING\e[0m"
    else
       echo -e "    argon2   \e[32mPRESENT\e[0m"
+   fi
+   if (($CHECKSTATUS & 8)); then
+      echo -e "  tiny-aes   \e[31mMISSING\e[0m"
+   else
+      echo -e "  tiny-aes   \e[32mPRESENT\e[0m"
    fi
 }
 
@@ -66,6 +82,10 @@ print_install_status()
    if (($INSTALL_ATTEMPT & $CHECKSTATUS & 4)); then
       echo -e "   \e[31m- argon2\e[0m"
    fi
+
+   if (($INSTALL_ATTEMPT & $CHECKSTATUS & 8)); then
+      echo -e "   \e[31m- tiny-aes\e[0m"
+   fi
 }
 
 print_uninstall_status()
@@ -87,6 +107,10 @@ print_uninstall_status()
    if (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS & 4)); then
       echo -e "   \e[33m- argon2\e[0m"
    fi
+
+   if (($UNINSTALL_ATTEMPT & ~$CHECKSTATUS & 8)); then
+      echo -e "   \e[33m- tiny-aes\e[0m"
+   fi
 }
 
 print_targets()
@@ -100,6 +124,14 @@ print_targets()
    if (($CHECKSTATUS & 4)); then
       echo -n "install-argon2 "
    fi
+   if (($CHECKSTATUS & 8)); then
+      echo -n "tiny-aes"
+   fi
+}
+
+optarg_decimal()
+{
+   echo $(bc <<< "obase=10;ibase=8;$OPTARG")
 }
 
 while getopts "htsi:u:q" flag; do
@@ -114,11 +146,11 @@ while getopts "htsi:u:q" flag; do
          print_status
          ;;
       i)
-         INSTALL_ATTEMPT=$OPTARG
+         INSTALL_ATTEMPT=$(optarg_decimal)
          print_install_status
          ;;
       u)
-         UNINSTALL_ATTEMPT=$OPTARG
+         UNINSTALL_ATTEMPT=$(optarg_decimal)
          print_uninstall_status
          ;;
       q)
