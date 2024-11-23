@@ -1,17 +1,22 @@
 NEED_TARGETS = $(shell ./sh/check -t)
 
 .PHONY: default
-default: regular
+default: debug
 
 .PHONY: reinstall
 reinstall: uninstall install
 
 .PHONY: install
 install:
-	@make --no-print-directory install-target
+	@make --no-print-directory install-dependencies
+	@make --no-print-directory install-bshell
 
-.PHONY: install-target
-install-target: $(NEED_TARGETS)
+.PHONY: install-dependencies
+install-dependencies: $(NEED_TARGETS)
+
+.PHONY: install-bshell
+install-bshell: release
+	@sudo cp bshell /usr/bin/
 
 .PHONY: install-argon2
 install-argon2:
@@ -80,12 +85,11 @@ uninstall-libssh2:
 
 .PHONY: uninstall-butil
 uninstall-butil:
-	@if [ -d butil ]; then \
-		cd butil; \
-		make uninstall; \
-		cd ../; \
-		rm -rf butil; \
-	fi
+	@if ! [ -d butil ]; then \
+		git clone git@github.com:ben256dev/butil.git; \
+	fi 
+	@cd butil && make uninstall
+	@rm -rf butil
 	@./sh/check -u01
 
 .PHONY: uninstall-tiny-aes
@@ -106,21 +110,28 @@ uninstall-tiny-aes:
 	fi
 	@./sh/check -u010
 
+.PHONY: uninstall-bshell
+uninstall-bshell:
+	@if [ -f /usr/bin/bshell ]; then sudo rm /usr/bin/bshell; fi
+
 .PHONY: check
 check:
 	@./sh/check -s -q
 
+.PHONY: uninstall-dependencies
+uninstall-dependencies: uninstall-argon2 uninstall-libssh2 uninstall-butil uninstall-tiny-aes
+
 .PHONY: uninstall
-uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil uninstall-tiny-aes clean
+uninstall: uninstall-dependencies uninstall-bshell clean
 	@./sh/check -u15
 
-.PHONY: regular
-regular:
-	@gcc shell.c -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+.PHONY: release
+release:
+	@gcc shell.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: debug
 debug:
-	@gcc shell.c -g -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+	@gcc shell.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: clean
 clean:
@@ -128,3 +139,4 @@ clean:
 	@if [ -d phc-winner-argon2 ]; then rm -rf phc-winner-argon2; fi
 	@if [ -d libssh2 ]; then rm -rf libssh2; fi
 	@if [ -d tiny-AES-c ]; then rm -rf tiny-AES-c; fi
+	@if [ -f bshell ]; then rm bshell; fi

@@ -41,6 +41,15 @@ usage()
 
 print_status()
 {
+   echo -e "\033[1mBSHELL:\033[0m"
+   if [ -f /usr/bin/bshell ]; then
+      echo -e "   bshell   \e[36mINSTALLED\e[0m\n"
+   else
+      echo -e "   bshell   \e[33mUNINSTALLED\e[0m\n"
+   fi
+
+   echo -e "\033[1mDEPENDENCIES:\033[0m"
+
    if (($CHECKSTATUS & 1)); then
       echo -e "     butil   \e[31mMISSING\e[0m"
    else
