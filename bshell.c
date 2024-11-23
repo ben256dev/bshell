@@ -11,6 +11,8 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
+#define SHL_MAX_ARGC 16
+#define SHL_MAX_ARG_SIZE 128
 #define SHL_SALT_SIZE 64
 #define SHL_HASH_SIZE 64
 typedef uint8_t shl_salt [SHL_SALT_SIZE];
@@ -79,10 +81,19 @@ int main(int argc, char* argv[])
    argc--;
    argv++;
 
-   for (int i = 0; i < argc; i++)
+   if (strcmp("-c", argv[0]) != 0)
+      die();
+
+   argc--;
+   argv++;
+
+   if (argc != 1)
+      die();
+
+   for (int i = 0; i < argc && i < SHL_MAX_ARGC; i++)
    {
       char c;
-      for (int j = 0; (c = argv[i][j]) != '\0'; j++)
+      for (int j = 0; (c = argv[i][j]) != '\0' && j < SHL_MAX_ARG_SIZE; j++)
       {
          if (c == '.' || c == '/' || c == '\\')
             die("'%c' is disallowed", c);

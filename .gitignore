@@ -3,7 +3,7 @@ datab
 dumpfile
 butil/
 argon2/
-pch-winner-argon2/
+phc-winner-argon2/
 
 datab-shell
 shell
