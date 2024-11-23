@@ -17,6 +17,7 @@ install-dependencies: $(NEED_TARGETS)
 .PHONY: install-bshell
 install-bshell: release
 	@sudo cp bshell /usr/bin/
+	@mkdir -p ~/.bshell
 
 .PHONY: install-argon2
 install-argon2:
@@ -113,6 +114,7 @@ uninstall-tiny-aes:
 .PHONY: uninstall-bshell
 uninstall-bshell:
 	@if [ -f /usr/bin/bshell ]; then sudo rm /usr/bin/bshell; fi
+	@if [ -d ~/.bshell ]; then sudo rm -rf ~/.bshell; fi
 
 .PHONY: check
 check:
@@ -127,11 +129,11 @@ uninstall: uninstall-dependencies uninstall-bshell clean
 
 .PHONY: release
 release:
-	@gcc shell.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+	@gcc bshell.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: debug
 debug:
-	@gcc shell.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+	@gcc bshell.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: clean
 clean:
