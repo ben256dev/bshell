@@ -6,35 +6,6 @@
 
 #include <butil/butil.h>
 
-void write_password(const char* password_path, const char* passval, size_t passlen, const char* passsal)
-{
-   FILE* password_file;
-
-   password_file = fopen(password_path, "w");
-   if (password_file == NULL)
-      pdie("fopen()");
-
-   fwrite(passval, 1, passlen, password_file);
-   fputc('\n', password_file);
-   fprintf(password_file, "%s\n", passsal);
-   fclose(password_file);
-}
-void authenticate(const char* password_path, const char* passval, size_t passlen)
-{
-   FILE* password_file;
-
-   password_file = fopen(password_path, "r");
-   if (password_file == NULL)
-      pdie("fopen()");
-
-   int c;
-   for (int i = 0; i < passlen && (c = fgetc(password_file)) != EOF; i++)
-   {
-      if (passval[i] != c)
-         die("invalid credentials");
-   }
-   fclose(password_file);
-}
 
 int main(int argc, char* argv[])
 {

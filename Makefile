@@ -1,7 +1,7 @@
 NEED_TARGETS = $(shell ./sh/check -t)
 
 .PHONY: default
-default: client
+default: regular
 
 .PHONY: reinstall
 reinstall: uninstall install
@@ -114,14 +114,12 @@ check:
 uninstall: uninstall-argon2 uninstall-libssh2 uninstall-butil uninstall-tiny-aes clean
 	@./sh/check -u15
 
-.PHONY: client
-client:
-	@gcc checkpass.c -o checkpass 
+.PHONY: regular
+regular:
 	@gcc shell.c -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
-.PHONY: client-debug
-client-debug:
-	@gcc checkpass.c -g -o checkpass 
+.PHONY: debug
+debug:
 	@gcc shell.c -g -o shell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: clean
