@@ -103,11 +103,10 @@ int main(int argc, char* argv[])
       }
    }
 
-   char** new_argv = xmalloc(argc * (sizeof(char*)));
-   char* token_ptr = NULL;
+   char* new_argv[SHL_MAX_ARGC] = {NULL};
+   char* token_ptr = new_argv[0];
 
-   argc = 0;
-   for (int i = 0; i < raw_argv_size; i++)
+   for (int i = 0; i < raw_argv_size && argc <= SHL_MAX_ARGC; i++)
    {
       if (token_ptr == NULL && !isspace(raw_argv[i]))
       {
@@ -116,23 +115,22 @@ int main(int argc, char* argv[])
       else if (token_ptr != NULL && isspace(raw_argv[i]))
       {
          raw_argv[i] = '\0';
-         argc++;
-         new_argv = xrealloc(new_argv, argc * (sizeof(char*)));
          new_argv[argc - 1] = token_ptr;
+         argc++;
          token_ptr = NULL;
       }
    }
    if (token_ptr != NULL)
    {
-      argc++;
-      new_argv = xrealloc(new_argv, argc * (sizeof(char*)));
       new_argv[argc - 1] = token_ptr;
       token_ptr = NULL;
    }
+   else
+      argc--;
 
    argv = new_argv;
 
-   for (int i = 0; i < argc && i < SHL_MAX_ARGC; i++)
+   for (int i = 0; i < argc; i++)
    {
       char c;
       for (int j = 0; (c = argv[i][j]) != '\0' && j < SHL_MAX_ARG_SIZE; j++)
