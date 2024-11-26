@@ -38,14 +38,14 @@ __attribute__((nonnull(1, 2, 3))) void shl_crypt_gen_hash(const char* input, con
       sprintf(&hash[i * 2], "%02x", hash_tmp[i]);
 }
 
-__attribute__((nonnull(1, 2, 3))) void write_password(const char* file_path, shl_salt salt, shl_hash hash)
+__attribute__((nonnull(1, 2, 3))) void shl_write_password(const char* file_path, shl_salt salt, shl_hash hash)
 {
    FILE* fd = xfopen(file_path, "w");
    fprintf(fd, "%.*s\n", SHL_SALT_SIZE, salt);
    fprintf(fd, "%.*s\n", SHL_HASH_SIZE, hash);
    fclose(fd);
 }
-__attribute__((nonnull(1, 2))) void authenticate(const char* file_path, const char* passphrase)
+__attribute__((nonnull(1, 2))) void shl_authenticate(const char* file_path, const char* passphrase)
 {
    shl_salt disk_salt;
    shl_hash disk_hash;
@@ -76,8 +76,11 @@ __attribute__((nonnull(1, 2))) void authenticate(const char* file_path, const ch
    exit(EXIT_SUCCESS);
 }
 
-int main(int argc, char* argv[])
+__attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** argv_ptr)
 {
+   int argc = *argc_ptr;
+   char** argv = *argv_ptr;
+
    argc--;
    argv++;
 
@@ -90,8 +93,8 @@ int main(int argc, char* argv[])
    if (argc != 1)
       die();
 
+   static char* new_argv[SHL_MAX_ARGC] = {NULL};
    char* raw_argv = argv[0];
-   char* new_argv[SHL_MAX_ARGC] = {NULL};
    char* token_ptr = new_argv[0];
 
    for (int i = 0; i < SHL_MAX_ARG_SIZE && argc <= SHL_MAX_ARGC; i++)
@@ -110,11 +113,7 @@ int main(int argc, char* argv[])
             argc--;
          break;
       }
-      else if (token_ptr == NULL && !isspace(c))
-      {
-         token_ptr = raw_argv + i;
-      }
-      else if (token_ptr != NULL)
+      else if (token_ptr != NULL && isspace(c))
       {
          c = '\0';
          new_argv[argc - 1] = token_ptr;
@@ -126,78 +125,14 @@ int main(int argc, char* argv[])
             break;
          }
       }
+      else if (token_ptr == NULL && !isspace(c))
+      {
+         token_ptr = raw_argv + i;
+      }
 
       raw_argv[i] = c;
    }
 
-   argv = new_argv;
-
-   for (int i = 0; i < argc; i++)
-   {
-      puts(argv[i]);
-   }
-
-   if (argc > 0)
-   {
-      if (strcmp(argv[0], "break") == 0)
-      {
-         if (argc == 2)
-         {
-            const char* home_dir = getenv("HOME");
-            if (home_dir == NULL)
-               die("HOME == NULL");
-
-            size_t path_len = snprintf(NULL, 0, "%s/.bshell/root", home_dir) + 1;
-            char* password_path = xmalloc(path_len);
-            snprintf(password_path, path_len, "%s/.bshell/root", home_dir);
-
-            struct stat statbuff;
-            int dne = stat(password_path, &statbuff);
-
-            if (dne == 0 && !S_ISREG(statbuff.st_mode))
-               die("\033[1;5;31mirregular:%o\033[0m", statbuff.st_mode);
-
-            if (argv[1][0] == '-' && argv[1][1] == 'p' && argv[1][2] != '\0')
-            {
-               const char* password_raw = argv[1] + 2;
-               if (dne)
-               {
-                  shl_salt salt;
-                  shl_crypt_gen_salt(salt);
-
-                  shl_hash hash;
-                  shl_crypt_gen_hash(password_raw, salt, hash);
-
-                  write_password(password_path, salt, hash);
-                  puts("\033[1;36mcreated\033[0m");
-                  return 0;
-               }
-               authenticate(password_path, password_raw);
-               puts("\033[1;32msuccess\033[0m");
-
-               const char *bash_path = "/bin/bash";
-               char* bash_argv[2] = { "-bash", NULL };
-               if (execvp(bash_path, bash_argv) == -1)
-                  pdie("execvp()");
-               return 0;
-            }
-            else if (argv[1][0] == '-' && argv[1][1] == 'd')
-            {
-               const char* password_raw = argv[1] + 2;
-               if (dne)
-               {
-                  puts("\033[1;2;31munknown\033[0m");
-                  return 0;
-               }
-               authenticate(password_path, password_raw);
-               if (remove(password_path))
-                  pdie("remove()");
-               puts("\033[1;35mdeleted\033[0m");
-               return 0;
-            } 
-         }
-      }
-   }
-
-	return 0;
+   (*argc_ptr) = argc;
+   (*argv_ptr) = new_argv;
 }

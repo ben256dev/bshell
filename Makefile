@@ -124,16 +124,16 @@ check:
 uninstall-dependencies: uninstall-argon2 uninstall-libssh2 uninstall-butil uninstall-tiny-aes
 
 .PHONY: uninstall
-uninstall: uninstall-dependencies uninstall-bshell clean
+uninstall: uninstall-dependencies uninstall-shl.clean
 	@./sh/check -u15
 
 .PHONY: release
 release:
-	@gcc bshell.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+	@gcc shl.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: debug
 debug:
-	@gcc bshell.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
+	@gcc shl.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes
 
 .PHONY: clean
 clean:
