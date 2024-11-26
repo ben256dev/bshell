@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
    argc--;
    argv++;
 
-   if (strcmp("-c", argv[0]) != 0)
+   if (argc == 0 || strcmp("-c", argv[0]) != 0)
       die();
 
    argc--;
@@ -89,6 +89,48 @@ int main(int argc, char* argv[])
 
    if (argc != 1)
       die();
+
+   char raw_argv[SHL_MAX_ARG_SIZE];
+   size_t raw_argv_size = 0;
+   for (int i = 0; i < SHL_MAX_ARG_SIZE; i++)
+   {
+      raw_argv[i] = argv[0][i];
+
+      if (argv[0][i] == '\0')
+      {
+         raw_argv_size = i;
+         break;
+      }
+   }
+
+   char** new_argv = xmalloc(argc * (sizeof(char*)));
+   char* token_ptr = NULL;
+
+   argc = 0;
+   for (int i = 0; i < raw_argv_size; i++)
+   {
+      if (token_ptr == NULL && !isspace(raw_argv[i]))
+      {
+         token_ptr = raw_argv + i;
+      }
+      else if (token_ptr != NULL && isspace(raw_argv[i]))
+      {
+         raw_argv[i] = '\0';
+         argc++;
+         new_argv = xrealloc(new_argv, argc * (sizeof(char*)));
+         new_argv[argc - 1] = token_ptr;
+         token_ptr = NULL;
+      }
+   }
+   if (token_ptr != NULL)
+   {
+      argc++;
+      new_argv = xrealloc(new_argv, argc * (sizeof(char*)));
+      new_argv[argc - 1] = token_ptr;
+      token_ptr = NULL;
+   }
+
+   argv = new_argv;
 
    for (int i = 0; i < argc && i < SHL_MAX_ARGC; i++)
    {
@@ -98,6 +140,7 @@ int main(int argc, char* argv[])
          if (c == '.' || c == '/' || c == '\\')
             die("'%c' is disallowed", c);
       }
+      puts(argv[i]);
    }
 
    if (argc > 0)
@@ -161,8 +204,6 @@ int main(int argc, char* argv[])
          }
       }
    }
-
-   puts("hi");
 
 	return 0;
 }
