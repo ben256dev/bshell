@@ -90,17 +90,16 @@ int main(int argc, char* argv[])
    if (argc != 1)
       die();
 
-   char raw_argv[SHL_MAX_ARG_SIZE];
-   size_t raw_argv_size = 0;
-
+   char* raw_argv = argv[0];
    char* new_argv[SHL_MAX_ARGC] = {NULL};
    char* token_ptr = new_argv[0];
 
    for (int i = 0; i < SHL_MAX_ARG_SIZE && argc <= SHL_MAX_ARGC; i++)
    {
-      raw_argv[i] = argv[0][i];
-
-      if (raw_argv[i] == '\0')
+      char c = raw_argv[i];
+      if (c == '.' || c == '/' || c == '\\')
+         die("'%c' is disallowed", c);
+      else if (c == '\0')
       {
          if (token_ptr != NULL)
          {
@@ -111,13 +110,13 @@ int main(int argc, char* argv[])
             argc--;
          break;
       }
-      else if (token_ptr == NULL && !isspace(raw_argv[i]))
+      else if (token_ptr == NULL && !isspace(c))
       {
          token_ptr = raw_argv + i;
       }
       else if (token_ptr != NULL)
       {
-         raw_argv[i] = '\0';
+         c = '\0';
          new_argv[argc - 1] = token_ptr;
          argc++;
          token_ptr = NULL;
@@ -127,42 +126,14 @@ int main(int argc, char* argv[])
             break;
          }
       }
-   }
 
-   /*
-   for (int i = 0; i < raw_argv_size && argc <= SHL_MAX_ARGC; i++)
-   {
-      if (token_ptr == NULL && !isspace(raw_argv[i]))
-      {
-         token_ptr = raw_argv + i;
-      }
-      else if (token_ptr != NULL && isspace(raw_argv[i]))
-      {
-         raw_argv[i] = '\0';
-         new_argv[argc - 1] = token_ptr;
-         argc++;
-         token_ptr = NULL;
-      }
+      raw_argv[i] = c;
    }
-   if (token_ptr != NULL)
-   {
-      new_argv[argc - 1] = token_ptr;
-      token_ptr = NULL;
-   }
-   else
-      argc--;
-   */
 
    argv = new_argv;
 
    for (int i = 0; i < argc; i++)
    {
-      char c;
-      for (int j = 0; (c = argv[i][j]) != '\0' && j < SHL_MAX_ARG_SIZE; j++)
-      {
-         if (c == '.' || c == '/' || c == '\\')
-            die("'%c' is disallowed", c);
-      }
       puts(argv[i]);
    }
 
