@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
    argc--;
    argv++;
 
-   if (argc == 0 || strcmp("-c", argv[0]) != 0)
+   if (argc < 1 || strcmp("-c", argv[0]) != 0)
       die();
 
    argc--;
@@ -92,20 +92,44 @@ int main(int argc, char* argv[])
 
    char raw_argv[SHL_MAX_ARG_SIZE];
    size_t raw_argv_size = 0;
-   for (int i = 0; i < SHL_MAX_ARG_SIZE; i++)
-   {
-      raw_argv[i] = argv[0][i];
-
-      if (argv[0][i] == '\0')
-      {
-         raw_argv_size = i;
-         break;
-      }
-   }
 
    char* new_argv[SHL_MAX_ARGC] = {NULL};
    char* token_ptr = new_argv[0];
 
+   for (int i = 0; i < SHL_MAX_ARG_SIZE && argc <= SHL_MAX_ARGC; i++)
+   {
+      raw_argv[i] = argv[0][i];
+
+      if (raw_argv[i] == '\0')
+      {
+         if (token_ptr != NULL)
+         {
+            new_argv[argc - 1] = token_ptr;
+            token_ptr = NULL;
+         }
+         else
+            argc--;
+         break;
+      }
+      else if (token_ptr == NULL && !isspace(raw_argv[i]))
+      {
+         token_ptr = raw_argv + i;
+      }
+      else if (token_ptr != NULL)
+      {
+         raw_argv[i] = '\0';
+         new_argv[argc - 1] = token_ptr;
+         argc++;
+         token_ptr = NULL;
+         if (argc > SHL_MAX_ARGC)
+         {
+            argc = SHL_MAX_ARGC;
+            break;
+         }
+      }
+   }
+
+   /*
    for (int i = 0; i < raw_argv_size && argc <= SHL_MAX_ARGC; i++)
    {
       if (token_ptr == NULL && !isspace(raw_argv[i]))
@@ -127,6 +151,7 @@ int main(int argc, char* argv[])
    }
    else
       argc--;
+   */
 
    argv = new_argv;
 
