@@ -96,13 +96,19 @@ __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** 
    static char* new_argv[SHL_MAX_ARGC] = {NULL};
    char* raw_argv = argv[0];
    char* token_ptr = new_argv[0];
+   int   sanitize = 1;
 
    for (int i = 0; i < SHL_MAX_ARG_SIZE && argc <= SHL_MAX_ARGC; i++)
    {
       char c = raw_argv[i];
-      if (c == '.' || c == '/' || c == '\\')
-         die("'%c' is disallowed", c);
-      else if (c == '\0')
+      if (sanitize)
+      {
+         if (c == '.' || c == '/')
+            die("%d:'%c' is disallowed", i, c);
+         if (i > 0 && token_ptr && token_ptr[0] == '-' && token_ptr[1] == 'p')
+            sanitize = 0;
+      }
+      if (c == '\0')
       {
          if (token_ptr != NULL)
          {
@@ -115,6 +121,7 @@ __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** 
       }
       else if (token_ptr != NULL && isspace(c))
       {
+         sanitize = 1;
          c = '\0';
          new_argv[argc - 1] = token_ptr;
          argc++;
