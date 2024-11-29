@@ -37,8 +37,10 @@ void shl_reinterpret_args(int* argc_ptr, char*** argv_ptr) __attribute__((nonnul
 
 void shl_terminal_disable_raw(void);
 
-void shl_terminal_enable_raw(void);
+// return 1 if not a terminal 0 otherwise
+int shl_terminal_enable_raw(void);
 
+// return NULL if not a terminal
 char* shl_get_password_raw(void);
 
 void shl_create_password(const char* password_path, const char* password_raw) __attribute__((nonnull(1, 2)));

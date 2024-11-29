@@ -36,10 +36,17 @@ int main(int argc, char* argv[])
                password_raw = (argv[1][2] == '\0') ?
                   shl_get_password_raw() : argv[1] + 2;
 
+               if (password_raw == NULL)
+               {
+                  puts("\033[1;2;31mnot a terminal\033[0m");
+                  return 0;
+               }
+
                if (dne)
                {
                   (argv[1][1] == 'p') ?
-                     shl_create_password(password_path, password_raw) : puts("\033[1;2;31munknown\033[0m");
+                     shl_create_password(password_path, password_raw) :
+                     puts("\033[1;2;31munknown\033[0m");
                   return 0;
                }
 
@@ -55,5 +62,6 @@ int main(int argc, char* argv[])
       }
    }
 
+   puts("\033[1;2;31mnot a command\033[0m");
 	return 0;
 }

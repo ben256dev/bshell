@@ -146,8 +146,11 @@ void shl_terminal_disable_raw(void)
       pdie("tcsetattr()");
 }
 
-void shl_terminal_enable_raw(void)
+int shl_terminal_enable_raw(void)
 {
+   if (!isatty(STDIN_FILENO))
+      return 1;
+
    if (tcgetattr(STDIN_FILENO, &original_termios) == -1)
       pdie("tcgetattr()");
 
@@ -164,6 +167,8 @@ void shl_terminal_enable_raw(void)
 
    if (tcsetattr(STDIN_FILENO, TCSANOW, &raw_termios) == -1)
       pdie("tcsetattr()");
+
+   return 0;
 }
 
 char* shl_get_password_raw(void)
@@ -172,7 +177,9 @@ char* shl_get_password_raw(void)
    size_t password_size = 16;
    char* password_raw = xmalloc(password_size);
 
-   shl_terminal_enable_raw();
+   if (shl_terminal_enable_raw())
+      return NULL;
+
    for (;;)
    {
       int c;
