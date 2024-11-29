@@ -5,16 +5,16 @@ QUIETEXIT=0
 INSTALL_ATTEMPT=0
 UNINSTALL_ATTEMPT=0
 
-if ! [ -f /usr/include/butil/butil.h ]; then
+if ! [ -f /usr/include/butil/butil.h ] || ! [ -f /usr/lib/libbutil.so ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 1))
 fi
-if ! [ -f /usr/include/libssh2.h ] && ! [ -f /usr/lib/libssh2.so ]; then
+if ! [ -f /usr/include/libssh2.h ] || ! [ -f /usr/lib/libssh2.so ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 2))
 fi
-if ! [ -f /usr/include/argon2.h ] && ! [ -f /usr/lib/libargon2.so ]; then
+if ! [ -f /usr/include/argon2.h ] || ! [ -f /usr/lib/libargon2.so ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 4))
 fi
-if ! [ -f /usr/include/aes.h ] && ! [ -f /usr/lib/libtinyaes.so ]; then
+if ! [ -f /usr/include/aes.h ] || ! [ -f /usr/lib/libtinyaes.so ]; then
    CHECKSTATUS=$(($CHECKSTATUS | 8))
 fi
 
