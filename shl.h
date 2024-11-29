@@ -21,6 +21,10 @@
 typedef uint8_t shl_salt [SHL_SALT_SIZE];
 typedef uint8_t shl_hash [SHL_HASH_SIZE];
 
+#define SHL_FLAG_HIDE_PASSWORD_OFF 01
+void shl_set_flag(uint8_t flag);
+int shl_get_flag(uint8_t flag);
+
 void shl_crypt_gen_salt(shl_salt salt) __attribute__((nonnull(1)));
 
 void shl_crypt_gen_hash(const char* input, const shl_salt salt, shl_hash hash) __attribute__((nonnull(1, 2, 3)));
@@ -34,3 +38,11 @@ void shl_reinterpret_args(int* argc_ptr, char*** argv_ptr) __attribute__((nonnul
 void shl_terminal_disable_raw(void);
 
 void shl_terminal_enable_raw(void);
+
+char* shl_get_password_raw(void);
+
+void shl_create_password(const char* password_path, const char* password_raw) __attribute__((nonnull(1, 2)));
+
+void shl_delete_password(const char* password_path) __attribute__((nonnull(1)));
+
+void shl_break_shell(void);

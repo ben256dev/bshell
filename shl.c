@@ -1,5 +1,17 @@
 #include "shl.h"
 
+uint8_t shl_flags = 0;
+
+void shl_set_flag(uint8_t flag)
+{
+   shl_flags |= flag;
+}
+
+int shl_get_flag(uint8_t flag)
+{
+   return (int)(shl_flags & flag);
+}
+
 __attribute__((nonnull(1))) void shl_crypt_gen_salt(shl_salt salt)
 {
    shl_hash salt_tmp;
@@ -152,4 +164,75 @@ void shl_terminal_enable_raw(void)
 
    if (tcsetattr(STDIN_FILENO, TCSANOW, &raw_termios) == -1)
       pdie("tcsetattr()");
+}
+
+char* shl_get_password_raw(void)
+{
+   size_t password_len = 0;
+   size_t password_size = 16;
+   char* password_raw = xmalloc(password_size);
+
+   shl_terminal_enable_raw();
+   for (;;)
+   {
+      int c;
+      c = getchar();
+      if (c == '\n' || c == '\r' || c == EOF)
+         break;
+      else if (c == 127)
+      {
+         if (password_len > 0)
+         {
+            password_len--;
+            putchar('\b');
+            putchar(' ');
+            putchar('\b');
+         }
+         continue;
+      }
+
+      if (password_len >= password_size)
+      {
+         password_size *= 2;
+         password_raw = xrealloc(password_raw, password_size);
+      }
+      password_raw[password_len] = c;
+
+      (shl_get_flag(SHL_FLAG_HIDE_PASSWORD_OFF)) ?
+         putchar(c) : putchar('*');
+
+      password_len++;
+   }
+   password_raw[password_len] = '\0';
+   printf("\r\n");
+   shl_terminal_disable_raw();
+
+   return password_raw;
+}
+
+__attribute__((nonnull(1, 2))) void shl_create_password(const char* password_path, const char* password_raw)
+{
+   shl_salt salt;
+   shl_crypt_gen_salt(salt);
+   shl_hash hash;
+   shl_crypt_gen_hash(password_raw, salt, hash);
+   shl_write_password(password_path, salt, hash);
+
+   puts("\033[1;36mcreated\033[0m");
+}
+
+__attribute__((nonnull(1))) void shl_delete_password(const char* password_path)
+{
+   if (remove(password_path))
+      pdie("remove()");
+   puts("\033[1;35mdeleted\033[0m");
+}
+
+void shl_break_shell(void)
+{
+   const char *bash_path = "/bin/bash";
+   char* bash_argv[2] = { "-bash", NULL };
+   puts("\033[1;32msuccess\033[0m");
+   if (execvp(bash_path, bash_argv) == -1)
+      pdie("execvp()");
 }

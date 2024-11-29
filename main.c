@@ -24,78 +24,33 @@ int main(int argc, char* argv[])
             if (dne == 0 && !S_ISREG(statbuff.st_mode))
                die("\033[1;5;31mirregular:%o\033[0m", statbuff.st_mode);
 
-            if (argv[1][0] == '-' && argv[1][1] == 'p')
+            if (argv[1][1] == 'P' || argv[1][1] == 'D')
             {
-               char* password_raw;
-               if (argv[1][2] == '\0')
-               {
-                  size_t password_len = 0;
-                  size_t password_size = 16;
-                  password_raw = xmalloc(password_size);
+               argv[1][1] = tolower(argv[1][1]);
+               shl_set_flag(SHL_FLAG_HIDE_PASSWORD_OFF);
+            }
 
-                  shl_terminal_enable_raw();
-                  for (; ;)
-                  {
-                     int c;
-                     c = getchar();
-                     if (c == '\n' || c == '\r' || c == EOF)
-                        break;
-
-                     if (password_len >= password_size)
-                     {
-                        password_size *= 2;
-                        password_raw = xrealloc(password_raw, password_size);
-                     }
-                     password_raw[password_len] = c;
-                     putchar('*');
-
-                     password_len++;
-                  }
-                  password_raw[password_len] = '\0';
-                  printf("\r\n");
-                  shl_terminal_disable_raw();
-
-               }
-               else
-                  password_raw = argv[1] + 2;
+            char* password_raw;
+            if (argv[1][0] == '-' && (argv[1][1] == 'p' || argv[1][1] == 'd'))
+            {
+               password_raw = (argv[1][2] == '\0') ?
+                  shl_get_password_raw() : argv[1] + 2;
 
                if (dne)
                {
-                  shl_salt salt;
-                  shl_crypt_gen_salt(salt);
-
-                  shl_hash hash;
-                  shl_crypt_gen_hash(password_raw, salt, hash);
-
-                  shl_write_password(password_path, salt, hash);
-                  puts("\033[1;36mcreated\033[0m");
+                  (argv[1][1] == 'p') ?
+                     shl_create_password(password_path, password_raw) : puts("\033[1;2;31munknown\033[0m");
                   return 0;
                }
-               shl_authenticate(password_path, password_raw);
-               puts("\033[1;32msuccess\033[0m");
 
-               const char *bash_path = "/bin/bash";
-               char* bash_argv[2] = { "-bash", NULL };
-               if (execvp(bash_path, bash_argv) == -1)
-                  pdie("execvp()");
+               shl_authenticate(password_path, password_raw);
+
+               (argv[1][1] == 'p') ?
+                  shl_break_shell() : shl_delete_password(password_path);
 
                free(password_raw);
                return 0;
             }
-            else if (argv[1][0] == '-' && argv[1][1] == 'd')
-            {
-               const char* password_raw = argv[1] + 2;
-               if (dne)
-               {
-                  puts("\033[1;2;31munknown\033[0m");
-                  return 0;
-               }
-               shl_authenticate(password_path, password_raw);
-               if (remove(password_path))
-                  pdie("remove()");
-               puts("\033[1;35mdeleted\033[0m");
-               return 0;
-            } 
          }
       }
    }
