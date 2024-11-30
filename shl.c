@@ -79,7 +79,7 @@ __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** 
    argv++;
 
    if (argc < 1 || strcmp("-c", argv[0]) != 0)
-      die();
+      die("%d:%s", argc, argv[0]);
 
    argc--;
    argv++;
