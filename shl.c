@@ -72,9 +72,11 @@ __attribute__((nonnull(1, 2))) void shl_authenticate(const char* file_path, cons
 
 __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** argv_ptr)
 {
-   printf("%d:%s", argc, argv[0]);
    int argc = *argc_ptr;
    char** argv = *argv_ptr;
+
+   for (int i = 0; i < argc; i++)
+      puts(argv[i]);
 
    argc--;
    argv++;
@@ -240,7 +242,6 @@ void shl_break_shell(void)
 {
    const char *bash_path = "/bin/bash";
    char* bash_argv[2] = { "-bash", NULL };
-   puts("\033[1;32msuccess\033[0m");
    if (execvp(bash_path, bash_argv) == -1)
       pdie("execvp()");
 }

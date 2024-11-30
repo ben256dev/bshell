@@ -136,11 +136,11 @@ uninstall: uninstall-dependencies uninstall-bshell clean
 
 .PHONY: release
 release:
-	@gcc shl.c main.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes -lbutil
+	@gcc shl.c bshell.c -O3 -flto -march=native -DNDEBUG -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes -lbutil
 
 .PHONY: debug
 debug:
-	@gcc shl.c main.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes -lbutil
+	@gcc shl.c bshell.c -g -o bshell -I/usr/local/include -largon2 -lcrypto -ltinyaes -lbutil
 
 .PHONY: clean
 clean:
