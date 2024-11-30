@@ -6,6 +6,10 @@ default: debug
 .PHONY: reinstall
 reinstall: uninstall install
 
+.PHONY: client
+client:
+	@gcc bshell_client.c ssh_exec.c -g -o bshell-client -lssh2
+
 .PHONY: install
 install:
 	@make --no-print-directory install-dependencies

@@ -95,7 +95,7 @@ int shl_client_exec(const char* hostname, const char* username, const char* publ
    }
 
    /* Request a PTY */
-   rc = libssh2_channel_request_pty(channel, "vanilla");
+   rc = libssh2_channel_request_pty(channel, "xterm-256color");
    if (rc) {
      fprintf(stderr, "Failed requesting PTY: %d\n", rc);
      goto cleanup;
