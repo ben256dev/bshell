@@ -135,21 +135,25 @@ int shl_client_exec(const char* hostname, const char* username, const char* publ
      }
 
      /* Read from the SSH channel */
-     if (FD_ISSET(fd, &fds)) {
-         nread = libssh2_channel_read(channel, buffer, sizeof(buffer));
-         if (nread == LIBSSH2_ERROR_EAGAIN) {
-             continue;
-         } else if (nread < 0) {
-             fprintf(stderr, "Error reading from channel: %zd\n", nread);
-             break;
-         } else if (nread == 0) {
-             /* EOF */
-             break;
-         } else {
-             fwrite(buffer, 1, nread, stdout);
-             fflush(stdout);
-         }
-     }
+      if (FD_ISSET(fd, &fds)) {
+          while (1) {
+              nread = libssh2_channel_read(channel, buffer, sizeof(buffer));
+              if (nread > 0) {
+                  fwrite(buffer, 1, nread, stdout);
+                  fflush(stdout);
+              } else if (nread == LIBSSH2_ERROR_EAGAIN) {
+                  // No more data available right now
+                  break;
+              } else if (nread == 0) {
+                  // EOF from the channel
+                  break;
+              } else {
+                  fprintf(stderr, "Error reading from channel: %zd\n", nread);
+                  break;
+              }
+          }
+      }
+
 
      /* Write user input to the SSH channel */
      if (FD_ISSET(STDIN_FILENO, &fds)) {

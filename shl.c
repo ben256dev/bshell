@@ -75,9 +75,6 @@ __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** 
    int argc = *argc_ptr;
    char** argv = *argv_ptr;
 
-   for (int i = 0; i < argc; i++)
-      puts(argv[i]);
-
    argc--;
    argv++;
 
