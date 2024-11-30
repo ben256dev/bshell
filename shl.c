@@ -72,6 +72,7 @@ __attribute__((nonnull(1, 2))) void shl_authenticate(const char* file_path, cons
 
 __attribute__((nonnull(1, 2))) void shl_reinterpret_args(int* argc_ptr, char*** argv_ptr)
 {
+   printf("%d:%s", argc, argv[0]);
    int argc = *argc_ptr;
    char** argv = *argv_ptr;
 
