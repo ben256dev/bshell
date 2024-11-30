@@ -47,7 +47,7 @@ install-libssh2:
 .PHONY: install-butil
 install-butil:
 	@if ! [ -d butil ]; then \
-		git clone git@github.com:ben256dev/butil.git; \
+		git clone https://github.com/ben256dev/butil.git; \
 	fi
 	@if [ -d butil ]; then \
 		cd butil; \
@@ -59,7 +59,7 @@ install-butil:
 .PHONY: install-tiny-aes
 install-tiny-aes:
 	@if ! [ -d tiny-AES-c ]; then \
-		git clone git@github.com:kokke/tiny-AES-c.git; \
+		git clone https://github.com/kokke/tiny-AES-c.git; \
 	fi
 	@cd tiny-AES-c && gcc -fPIC -c aes.c -o aes.o && gcc -shared -o libtinyaes.so aes.o
 	@sudo cp tiny-AES-c/aes.h /usr/include/
@@ -94,7 +94,7 @@ uninstall-libssh2:
 .PHONY: uninstall-butil
 uninstall-butil:
 	@if ! [ -d butil ]; then \
-		git clone git@github.com:ben256dev/butil.git; \
+		git clone https://github.com/ben256dev/butil.git; \
 	fi 
 	@cd butil && make uninstall
 	@rm -rf butil
