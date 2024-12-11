@@ -8,7 +8,7 @@ reinstall: uninstall install
 
 .PHONY: client
 client:
-	@gcc bshell_client.c ssh_exec.c -g -o bshell-client -lssh2
+	@gcc bshell_client.c ssh_exec.c -g -o bshell-client -lssh2 -lbutil
 
 .PHONY: install
 install:
