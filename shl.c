@@ -173,6 +173,8 @@ int shl_terminal_enable_raw(void)
 
 char* shl_get_password_raw(void)
 {
+   printf("\r\033[2K\r");
+
    size_t password_len = 0;
    size_t password_size = 16;
    char* password_raw = xmalloc(password_size);
@@ -191,9 +193,7 @@ char* shl_get_password_raw(void)
          if (password_len > 0)
          {
             password_len--;
-            putchar('\b');
-            putchar(' ');
-            putchar('\b');
+            printf("\b \b");
          }
          continue;
       }
@@ -211,8 +211,11 @@ char* shl_get_password_raw(void)
       password_len++;
    }
    password_raw[password_len] = '\0';
-   printf("\r\n");
+
    shl_terminal_disable_raw();
+
+   printf("\r\033[2K\033[1;32m success\033[0m\r");
+   fflush(stdout);
 
    return password_raw;
 }

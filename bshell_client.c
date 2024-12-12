@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
     const char* break_comm = "break";
     size_t break_comm_len = sizeof(break_comm);
 
-    if (argc == 2 && strcmp("break", argv[0]) == 0)
+    if (argc > 0 && strcmp("break", argv[0]) == 0)
     {
-        if (argv[1][0] == '-' && (argv[1][1] == 'p' || argv[1][1] == 'd'))
+        if (argc == 2 && argv[1][0] == '-' && (argv[1][1] == 'p' || argv[1][1] == 'd'))
         {
             size_t arglen = strlen(argv[1]) + 1 + break_comm_len;
             char* combined_arg = xmalloc(arglen);
@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
 
             shl_client_exec("ben256.com", "datab", "/home/ben256/.ssh/id_rsa.pub", "/home/ben256/.ssh/id_rsa", combined_arg);
         }
+        else
+            printf("\033[1;3mbreak:\033[0m break <-p | -d>\n");
 
         return 0;
     }
