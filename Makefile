@@ -22,6 +22,10 @@ install-dependencies: $(NEED_TARGETS)
 install-bshell: release install-bshell-local
 	@sudo cp bshell /usr/bin/
 
+.PHONY: install-client
+install-client: install-dependencies client
+	@sudo cp bshell-client /usr/bin/
+
 .PHONY: install-argon2
 install-argon2:
 	@if ! [ -d phc-winner-argon2 ]; then \
