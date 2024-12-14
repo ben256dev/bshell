@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
             char* combined_name = xmalloc(name_len);
             snprintf(combined_name, name_len, "%s/%s", comm_dir, ent->d_name);
 
+            if (strcmp(argv[0], ent->d_name) != 0)
+                continue;
+
             if (execvp(combined_name, &argv[0]) == -1)
                 pdie("execvp()");
         }
