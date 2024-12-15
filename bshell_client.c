@@ -7,6 +7,8 @@
 
 int main(int argc, char *argv[])
 {
+    setenv("BINNAME", argv[0], 1)
+
     argc--;
     argv++;
     
